@@ -1,0 +1,73 @@
+export const postEdit = async (req, res) => {
+    const {
+        session: {
+            user: { _id, avatarUrl, email: sessionEmail, username: sessionUsername },
+        },
+        body: { name, email, username, location },
+        file,
+    } = req;
+
+    let searchParam = [];
+    if (sessionEmail !== email) {
+        searchParam.push({ email });
+    }
+    if (sessionUsername !== username) {
+        searchParam.push({ username });
+    }
+    if (searchParam.length > 0) {
+        const foundUser = await User.findOne({ $or: searchParam });
+        if (foundUser && foundUser._id.toString() !== _id) {
+            return res.status(HTTP_BAD_REQUEST).render("edit-profile", {
+                pageTitle: "Edit Profile",
+                errorMessage: "This username/email is already taken.",
+            });
+        }
+    }
+    const isHeroku = process.env.NODE_ENV === "production";
+    const updatedUser = await User.findByIdAndUpdate(_id, {
+        avatarUrl: file ? (isHeroku ? file.location : file.path) : avatarUrl,
+        name,
+        email,
+        username,
+        location
+    },
+        {
+            new: true
+        }
+    );
+    req.session.user = updatedUser;
+    return res.redirect("/users/edit");
+}
+
+export const edit = (req, res) => res.render("edit");
+
+
+이 부분의 이해는 나중에 다시 작성해보면서 보도록 하자.
+2021년 12월에는 완벽하게 이해하지 못함 - 아니 직접 작성해보지 못한것이죠
+
+이것은 공부하면석 작성한 내코드
+export const postEdit = async (req, res) => {
+    const {
+        session: {
+            user: { _id },
+        },
+        body: { name, email, username, location },
+        file,
+    } = req;
+    console.log(file);
+    const updatedUser = await User.findByIdAndUpdate(
+        _id, 
+        {
+        
+        name,
+        email,
+        username,
+        location
+    },
+        {
+            new: true
+        }
+    );
+    req.session.user = updatedUser;
+    return res.redirect("/users/edit");
+};

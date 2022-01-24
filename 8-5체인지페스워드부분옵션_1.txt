@@ -1,0 +1,69 @@
+export const postChangePassword = async (req, res) => {
+    // 누가 로그인한지 알아야 하므로
+    const {
+        session: {
+            user: { _id, password },
+        },
+        body: { oldPassword, newPassword,newPasswordConfirmation, },
+    } = req;
+    const ok = await bcrypt.compare(oldPassword, password);
+    if (!ok){
+        return res.status(400).render("users/change-password", {
+            pageTitle: "Change Password",
+            errorMessage: "The Current PW does not match the confirmation",
+        });
+    }
+    if(newPassword !== newPasswordConfirmation){
+        return res.status(400).render("users/change-password", {
+            pageTitle: "Change Password",
+            errorMessage: "The PW does not match the confirmation",
+        });
+    }
+    // 0ne  pre save middleware 를 거치고 User.create 를 사용하는것
+    // pre save middleware 가 비밀번호를 hash해준고 있지
+    const user = await User.findById(_id);
+    console.log("OLd", user.password);
+    user.password = newPassword;
+    console.log("New unhashded", user.password);
+    await user.save();   //DB에 무언가 저장하는데는 시간이 걸리닌까 await 써주고 
+    console.log("new pw", user.password);
+    req.session.user.password = user.password;
+    // 우린 DB와 Session 두곳에 저장소를 사용하고 있는 것이므로 session 업데이트가 필요한것이다.
+ 
+    return res.redirect("/users/logout");
+
+};
+
+위의 것을 아래처림 해서
+
+export const postChangePassword = async (req, res) => {
+    // 누가 로그인한지 알아야 하므로
+    const {
+        session: {
+            user: { _id }, // 3아이디만 적어서
+        },
+        body: { oldPassword, newPassword,newPasswordConfirmation, },
+    } = req;
+    const user = await User.findById(_id);
+    const ok = await bcrypt.compare(oldPassword, user.password); // 3 아예 user.password 만 가져와서
+    if (!ok){
+        return res.status(400).render("users/change-password", {
+            pageTitle: "Change Password",
+            errorMessage: "The Current PW does not match the confirmation",
+        });
+    }
+    if(newPassword !== newPasswordConfirmation){
+        return res.status(400).render("users/change-password", {
+            pageTitle: "Change Password",
+            errorMessage: "The PW does not match the confirmation",
+        });
+    }
+    // 0ne  pre save middleware 를 거치고 User.create 를 사용하는것
+    // pre save middleware 가 비밀번호를 hash해준고 있지
+    
+    
+    user.password = newPassword;  // 3 이렇게 함으로써 세션업데이트 또 할 필요없지
+    await user.save();   
+    return res.redirect("/users/logout"); 
+
+};

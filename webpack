@@ -1,0 +1,14 @@
+
+[webpack-cli] Invalid configuration object. Webpack has been initialized using a configuration object that does not 
+match the API schema.
+ - configuration.output.module should be a boolean.
+   -> Output javascript files as module source type.
+npm ERR! code ELIFECYCLE
+npm ERR! errno 2
+npm ERR! wetube@1.0.0 dev:assets: `webpack`
+npm ERR! Exit status 2
+npm ERR!
+npm ERR! Failed at the wetube@1.0.0 dev:assets script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
